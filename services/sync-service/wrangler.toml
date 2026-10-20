@@ -88,7 +88,7 @@ id = "bac2723a3bcd436481b8a2b1baa24c8a"
 
 [[env.playground.kv_namespaces]]
 binding = "SNAPSHOT_STORE_KV"
-id = "d107d66e62a942e8a90acdba5ac223fb"
+id = "d107d66e62a942e8a90acdba8b04bd38"
 
 [[env.playground.migrations]]
 tag = "v1"
