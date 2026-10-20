@@ -50,6 +50,33 @@ pulumi preview
 
 See [`adapter/vpc.ts`](./adapter/vpc.ts) — reads VPC IDs from env / Pulumi config instead of Macro-inc hardcodes. Wire into TC forks of stacks later (Slice 1+).
 
+## Slice 1 — data plane (`slice1/`)
+
+Creates (staging, cost-bounded):
+
+1. ALB + HTTP:80 listener (fixed 503 default — app routes later; HTTPS/ACM deferred)
+2. RDS Postgres 16 `db.t4g.micro` (MacroDB) + SM `/tc-macro-sync/macrodb/dev`
+3. ElastiCache Redis 7 `cache.t4g.micro` + SM `/tc-macro-sync/redis/dev`
+4. Security groups: ALB → ECS:8080 → DB:5432 / Redis:6379
+
+Depends on StackReference `tc-macro-foundation/dev`.
+
+```bash
+cd deploy/aws/slice1
+bun install
+# same export-credentials + PULUMI_CONFIG_PASSPHRASE as Slice 0
+pulumi stack select dev || pulumi stack init dev
+pulumi up
+```
+
+### Still blocked for full G1
+
+- Container images / ECR (nix builds + push)
+- FusionAuth + SMTP from AKV
+- MSK + OpenSearch (**Stefan paid GO**)
+- Real AKV → SM sync (bootstrap/macrodb placeholders only)
+- ACM + custom domain for HTTPS
+
 ## Out of scope here
 
-MSK, OpenSearch, MacroDB, FusionAuth, app services, enabling upstream `deploy_on_push.yml` against TC, Sliplane changes.
+MSK, OpenSearch, FusionAuth apps, enabling upstream `deploy_on_push.yml` against TC, Sliplane changes.
