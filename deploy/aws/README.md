@@ -69,15 +69,36 @@ pulumi stack select dev || pulumi stack init dev
 pulumi up
 ```
 
-**Live Slice 1 (2026-10-20):** ALB `tc-macro-dev-gw-229005815.us-east-1.elb.amazonaws.com` (503 stub), RDS `tc-macro-dev-macrodb`, Redis `tc-macro-dev-redis`. Receipt: agent store `macro-aws-slice1-receipt.md`.
+**Live Slice 1 (2026-10-20):** ALB `tc-macro-dev-gw-229005815.us-east-1.elb.amazonaws.com` (503 stub), RDS `tc-macro-dev-macrodb`, Redis `tc-macro-dev-redis`.
+
+## Slice 2 — platform (`slice2/`)
+
+Creates (no MSK/OpenSearch/apps):
+
+1. KMS `alias/tc-macro-dev`
+2. S3: documents / static / uploads (KMS SSE, public access blocked)
+3. SQS + DLQ: search-upload, document-upload
+4. DynamoDB: connection-gateway, static-file (PAY_PER_REQUEST)
+5. ECR repos `tc-macro/<service>` for G1 image push (empty)
+6. SM inventory `/tc-macro-sync/platform/dev`
+
+```bash
+cd deploy/aws/slice2
+bun install
+pulumi stack select dev || pulumi stack init dev
+pulumi up
+```
+
+**Live Slice 2 (2026-10-20):** see agent store `macro-aws-slice2-receipt.md`. Monthly budget `tc-macro-staging-monthly` ($200).
 
 ### Still blocked for full G1
 
-- Container images / ECR (nix builds + push)
+- **Image builds** (nix) + push into ECR (repos ready)
 - FusionAuth + SMTP from AKV
 - MSK + OpenSearch (**Stefan paid GO**)
-- Real AKV → SM sync (bootstrap/macrodb placeholders only)
+- Real AKV → SM sync for app secrets
 - ACM + custom domain for HTTPS
+- CF `wrangler deploy --env tc` (needs AKV account-id)
 
 ## Out of scope here
 
