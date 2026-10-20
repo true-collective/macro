@@ -88,7 +88,7 @@ id = "bac2723a3bcd436481b8a2b1baa24c8a"
 
 [[env.playground.kv_namespaces]]
 binding = "SNAPSHOT_STORE_KV"
-id = "d107d66e62a942e8a90acdba8b04bd38"
+id = "d107d66e62a942e8a90acdba5ac223fb"
 
 [[env.playground.migrations]]
 tag = "v1"
@@ -175,3 +175,45 @@ id = "1e4c79d4265e40f08f9bfcb4c985c6d0"
 [[env.prod.kv_namespaces]]
 binding = "SNAPSHOT_STORE_KV"
 id = "50a128e2f8aa4357938fdb0ed0d629c5"
+
+
+# TRUE COLLECTIVE ENV — AWS-primary staging (Stefan Phase 1)
+# Account id + API token from AKV tc-macro/cf/* — never commit those.
+# URLs use public ALB HTTP until ACM/domain; swap to HTTPS when ready.
+[env.tc]
+name = "tc-macro-sync"
+
+[env.tc.vars]
+ENVIRONMENT = "staging"
+# Placeholders only — real secrets via `wrangler secret put --env tc`
+INTERNAL_API_SECRET_KEY = "REPLACE_VIA_WRANGLER_SECRET"
+SPS_URL = "http://tc-macro-dev-gw-229005815.us-east-1.elb.amazonaws.com/search-processing"
+DSS_URL = "http://tc-macro-dev-gw-229005815.us-east-1.elb.amazonaws.com/dss"
+LEXICAL_SERVICE_URL = "http://tc-macro-dev-gw-229005815.us-east-1.elb.amazonaws.com/lexical"
+
+[env.tc.durable_objects]
+bindings = [
+  { name = "DOCUMENT_SYNC_SESSION", class_name = "DocumentSyncSession" },
+]
+
+[[env.tc.r2_buckets]]
+binding = "DOCUMENT_SNAPSHOT_BUCKET"
+bucket_name = "tc-macro-document-snapshots"
+
+[[env.tc.d1_databases]]
+binding = "USER_PEER_MAPPING"
+migrations_dir = "./database/user-peer-mapping/migrations/"
+database_name = "tc-macro-user-peer-mapping"
+database_id = "7c72c4a7-4cf2-46cb-871a-55150d01c763"
+
+[[env.tc.kv_namespaces]]
+binding = "DOCUMENT_VERSIONING_KV"
+id = "0f2aa8b3f5d244d4a3209cbf98027e25"
+
+[[env.tc.kv_namespaces]]
+binding = "SNAPSHOT_STORE_KV"
+id = "94752ca5eca4488db8d24f46027c4f9b"
+
+[[env.tc.migrations]]
+tag = "v1"
+new_sqlite_classes = ["DocumentSyncSession"]
