@@ -1,0 +1,176 @@
+{
+  "//": "TC Macro FusionAuth kickstart. Placeholders #{TC_*} are substituted by entrypoint.sh from Sliplane secret env. Do not commit real secret values.",
+  "apiKeys": [
+    {
+      "key": "#{TC_FA_API_KEY}",
+      "description": "TC Macro API Key"
+    }
+  ],
+  "variables": {
+    "defaultTenantId": "#{TC_FA_TENANT_ID}"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "url": "/api/key/import/#{TC_FA_JWT_KEY_ID}",
+      "body": {
+        "key": {
+          "id": "#{TC_FA_JWT_KEY_ID}",
+          "algorithm": "HS256",
+          "name": "TC JWT Signing Key",
+          "secret": "#{TC_FA_JWT_SECRET}",
+          "type": "HMAC"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/api/lambda/#{TC_FA_JWT_LAMBDA_ID}",
+      "body": {
+        "lambda": {
+          "id": "#{TC_FA_JWT_LAMBDA_ID}",
+          "name": "Populate JWT (TC)",
+          "type": "JWTPopulate",
+          "enabled": true,
+          "body": "function populate(jwt, user, _registration) { jwt.fusion_user_id = user.id; jwt.email = user.email; jwt.macro_user_id = 'macro|' + user.email; }"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/api/email/template/#{TC_FA_PASSWORDLESS_TEMPLATE_ID}",
+      "body": {
+        "emailTemplate": {
+          "name": "Passwordless Login (TC)",
+          "defaultSubject": "Your True Collective login code",
+          "defaultHtmlTemplate": "<p>Your login code:</p><h1>${code}</h1>",
+          "defaultTextTemplate": "Your login code: ${code}",
+          "fromEmail": "#{TC_FA_MAIL_FROM}"
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "/api/tenant/#{TC_FA_TENANT_ID}",
+      "body": {
+        "tenant": {
+          "name": "True Collective",
+          "issuer": "#{TC_FA_ISSUER}",
+          "eventConfiguration": {
+            "events": {
+              "user.create": { "enabled": true, "transactionType": "AbsoluteMajority" },
+              "user.create.complete": { "enabled": true, "transactionType": "None" },
+              "user.delete.complete": { "enabled": true, "transactionType": "None" },
+              "user.email.verified": { "enabled": true, "transactionType": "AbsoluteMajority" }
+            }
+          },
+          "jwtConfiguration": {
+            "accessTokenKeyId": "#{TC_FA_JWT_KEY_ID}",
+            "idTokenKeyId": "#{TC_FA_JWT_KEY_ID}",
+            "refreshTokenTimeToLiveInMinutes": 43200,
+            "timeToLiveInSeconds": 3600
+          },
+          "emailConfiguration": {
+            "host": "#{TC_FA_SMTP_HOST}",
+            "port": "#{TC_FA_SMTP_PORT}",
+            "security": "#{TC_FA_SMTP_SECURITY}",
+            "username": "#{TC_FA_SMTP_USERNAME}",
+            "password": "#{TC_FA_SMTP_PASSWORD}",
+            "defaultFromEmail": "#{TC_FA_MAIL_FROM}",
+            "defaultFromName": "True Collective",
+            "passwordlessEmailTemplateId": "#{TC_FA_PASSWORDLESS_TEMPLATE_ID}"
+          },
+          "externalIdentifierConfiguration": {
+            "passwordlessLoginGenerator": {
+              "length": 6,
+              "type": "randomDigits"
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/api/application/#{TC_FA_APPLICATION_ID}",
+      "tenantId": "#{TC_FA_TENANT_ID}",
+      "body": {
+        "application": {
+          "name": "True Collective Macro",
+          "tenantId": "#{TC_FA_TENANT_ID}",
+          "loginConfiguration": {
+            "allowTokenRefresh": true,
+            "requireAuthentication": true,
+            "generateRefreshTokens": true
+          },
+          "oauthConfiguration": {
+            "clientId": "#{TC_FA_APPLICATION_ID}",
+            "clientSecret": "#{TC_FA_CLIENT_SECRET}",
+            "enabledGrants": ["authorization_code", "refresh_token"],
+            "authorizedRedirectURLs": [
+              "#{TC_FA_OAUTH_REDIRECT_URI}",
+              "http://tc-macro-auth.internal:8080/oauth/redirect"
+            ],
+            "authorizedURLValidationPolicy": "ExactMatch",
+            "logoutBehavior": "AllApplications",
+            "generateRefreshTokens": true,
+            "requireClientAuthentication": false
+          },
+          "jwtConfiguration": {
+            "enabled": true,
+            "accessTokenKeyId": "#{TC_FA_JWT_KEY_ID}",
+            "idTokenKeyId": "#{TC_FA_JWT_KEY_ID}",
+            "timeToLiveInSeconds": 3600,
+            "refreshTokenTimeToLiveInMinutes": 43200,
+            "refreshTokenExpirationPolicy": "SlidingWindow"
+          },
+          "lambdaConfiguration": {
+            "accessTokenPopulateId": "#{TC_FA_JWT_LAMBDA_ID}"
+          },
+          "passwordlessConfiguration": {
+            "enabled": true
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/api/webhook",
+      "body": {
+        "webhook": {
+          "description": "Create User Webhook",
+          "connectTimeout": 1000,
+          "readTimeout": 2000,
+          "url": "http://tc-macro-auth.internal:8080/webhooks/user",
+          "global": true,
+          "eventsEnabled": {
+            "user.create": true,
+            "user.create.complete": true,
+            "user.email.verified": true
+          },
+          "headers": {
+            "x-internal-auth-key": "#{TC_INTERNAL_API_KEY}"
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/api/webhook",
+      "body": {
+        "webhook": {
+          "description": "Delete User Webhook",
+          "connectTimeout": 1000,
+          "readTimeout": 2000,
+          "url": "http://tc-macro-auth.internal:8080/webhooks/user/delete",
+          "global": true,
+          "eventsEnabled": {
+            "user.delete.complete": true
+          },
+          "headers": {
+            "x-internal-auth-key": "#{TC_INTERNAL_API_KEY}"
+          }
+        }
+      }
+    }
+  ]
+}
