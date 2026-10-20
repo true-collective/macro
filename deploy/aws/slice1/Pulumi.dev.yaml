@@ -1,0 +1,6 @@
+config:
+  aws:region: us-east-1
+  tc-macro-data-plane:environment: dev
+  tc-macro-data-plane:dbInstanceClass: db.t4g.micro
+  tc-macro-data-plane:redisNodeType: cache.t4g.micro
+  tc-macro-data-plane:foundationStack: tc-macro-foundation/dev
