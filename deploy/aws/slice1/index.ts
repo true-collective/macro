@@ -10,8 +10,9 @@ import * as random from "@pulumi/random";
 const cfg = new pulumi.Config();
 const environment = cfg.get("environment") ?? "dev";
 const namePrefix = `tc-macro-${environment}`;
+// DIY S3 backend requires fully-qualified name: organization/<project>/<stack>
 const foundationStack =
-  cfg.get("foundationStack") ?? "tc-macro-foundation/dev";
+  cfg.get("foundationStack") ?? "organization/tc-macro-foundation/dev";
 const dbInstanceClass = cfg.get("dbInstanceClass") ?? "db.t4g.micro";
 const redisNodeType = cfg.get("redisNodeType") ?? "cache.t4g.micro";
 
@@ -27,7 +28,7 @@ const privateSubnetIds = foundation.requireOutput(
 // --- Security groups ---
 const albSg = new aws.ec2.SecurityGroup(`${namePrefix}-alb-sg`, {
   vpcId,
-  description: "TC Macro ALB — HTTP (HTTPS/ACM later)",
+  description: "TC Macro ALB - HTTP (HTTPS/ACM later)",
   ingress: [
     {
       protocol: "tcp",
@@ -45,7 +46,7 @@ const albSg = new aws.ec2.SecurityGroup(`${namePrefix}-alb-sg`, {
 
 const ecsSg = new aws.ec2.SecurityGroup(`${namePrefix}-ecs-sg`, {
   vpcId,
-  description: "TC Macro ECS tasks (Fargate) — Slice 1 landing",
+  description: "TC Macro ECS tasks (Fargate) - Slice 1 landing",
   ingress: [
     {
       protocol: "tcp",
@@ -132,7 +133,7 @@ const httpListener = new aws.lb.Listener(`${namePrefix}-http`, {
       type: "fixed-response",
       fixedResponse: {
         contentType: "text/plain",
-        messageBody: "tc-macro gateway — Slice 1 (no app routes yet)",
+        messageBody: "tc-macro gateway - Slice 1 (no app routes yet)",
         statusCode: "503",
       },
     },
@@ -179,7 +180,7 @@ const db = new aws.rds.Instance(`${namePrefix}-macrodb`, {
 
 const dbSecret = new aws.secretsmanager.Secret(`${namePrefix}-macrodb-secret`, {
   name: `/tc-macro-sync/macrodb/${environment}`,
-  description: "MacroDB credentials — generated at Slice 1; rotate via AKV sync later",
+  description: "MacroDB credentials - generated at Slice 1; rotate via AKV sync later",
   tags: { Project: "tc-macro", Slice: "1" },
 });
 
@@ -222,7 +223,7 @@ const redis = new aws.elasticache.Cluster(`${namePrefix}-redis`, {
 
 const redisSecret = new aws.secretsmanager.Secret(`${namePrefix}-redis-secret`, {
   name: `/tc-macro-sync/redis/${environment}`,
-  description: "Redis endpoint — Slice 1",
+  description: "Redis endpoint - Slice 1",
   tags: { Project: "tc-macro", Slice: "1" },
 });
 
