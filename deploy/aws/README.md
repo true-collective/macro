@@ -59,7 +59,7 @@ Creates (staging, cost-bounded):
 3. ElastiCache Redis 7 `cache.t4g.micro` + SM `/tc-macro-sync/redis/dev`
 4. Security groups: ALB → ECS:8080 → DB:5432 / Redis:6379
 
-Depends on StackReference `tc-macro-foundation/dev`.
+Depends on StackReference `organization/tc-macro-foundation/dev` (DIY S3 backend FQN).
 
 ```bash
 cd deploy/aws/slice1
@@ -68,6 +68,8 @@ bun install
 pulumi stack select dev || pulumi stack init dev
 pulumi up
 ```
+
+**Live Slice 1 (2026-10-20):** ALB `tc-macro-dev-gw-229005815.us-east-1.elb.amazonaws.com` (503 stub), RDS `tc-macro-dev-macrodb`, Redis `tc-macro-dev-redis`. Receipt: agent store `macro-aws-slice1-receipt.md`.
 
 ### Still blocked for full G1
 
