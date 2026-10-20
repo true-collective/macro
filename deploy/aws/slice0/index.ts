@@ -77,7 +77,7 @@ const nat = new aws.ec2.NatGateway(`${namePrefix}-nat`, {
 
 const publicRt = new aws.ec2.RouteTable(`${namePrefix}-public-rt`, {
   vpcId: vpc.id,
-  routes: [{ cidrBlock: "0.0.0.0.0/0", gatewayId: igw.id }],
+  routes: [{ cidrBlock: "0.0.0.0/0", gatewayId: igw.id }],
   tags: { Name: `${namePrefix}-public-rt`, Project: "tc-macro", Slice: "0" },
 });
 
