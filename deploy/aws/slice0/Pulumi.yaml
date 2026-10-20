@@ -1,0 +1,9 @@
+name: tc-macro-foundation
+description: True Collective Macro Slice 0 — VPC, SM bootstrap proof, empty ECS cluster
+runtime:
+  name: nodejs
+  options:
+    typescript: true
+    packagemanager: bun
+backend:
+  url: s3://tc-macro-pulumi-state-155833351761?region=us-east-1&awssdk=v2
