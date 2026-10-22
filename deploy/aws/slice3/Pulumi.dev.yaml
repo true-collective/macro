@@ -1,0 +1,8 @@
+config:
+  aws:region: us-east-1
+  tc-macro-g1-apps:environment: dev
+  tc-macro-g1-apps:foundationStack: organization/tc-macro-foundation/dev
+  tc-macro-g1-apps:dataPlaneStack: organization/tc-macro-data-plane/dev
+  # Image tag after smoke push (nginx) or real service build
+  tc-macro-g1-apps:authImageTag: smoke
+  tc-macro-g1-apps:enableAuthService: "true"
