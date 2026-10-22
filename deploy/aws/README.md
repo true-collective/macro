@@ -32,7 +32,7 @@ Creates:
 ```bash
 export AWS_DEFAULT_REGION=us-east-1
 export PATH="$HOME/.pulumi/bin:$HOME/.bun/bin:$PATH"
-# aws login session → env for Pulumi AWS provider
+# Prefer deploy IAM user from SM (not interactive aws login on Phase 1 VM)
 eval "$(aws configure export-credentials --format env)"
 export PULUMI_CONFIG_PASSPHRASE="$(aws secretsmanager get-secret-value \
   --secret-id /tc-macro/pulumi/config-passphrase --query SecretString --output text)"
@@ -61,14 +61,6 @@ Creates (staging, cost-bounded):
 
 Depends on StackReference `organization/tc-macro-foundation/dev` (DIY S3 backend FQN).
 
-```bash
-cd deploy/aws/slice1
-bun install
-# same export-credentials + PULUMI_CONFIG_PASSPHRASE as Slice 0
-pulumi stack select dev || pulumi stack init dev
-pulumi up
-```
-
 **Live Slice 1 (2026-10-20):** ALB `tc-macro-dev-gw-229005815.us-east-1.elb.amazonaws.com` (503 stub), RDS `tc-macro-dev-macrodb`, Redis `tc-macro-dev-redis`.
 
 ## Slice 2 — platform (`slice2/`)
@@ -82,23 +74,31 @@ Creates (no MSK/OpenSearch/apps):
 5. ECR repos `tc-macro/<service>` for G1 image push (empty)
 6. SM inventory `/tc-macro-sync/platform/dev`
 
+**Live Slice 2 (2026-10-20):** see agent store `macro-aws-slice2-receipt.md`. Monthly budget `tc-macro-staging-monthly` ($200).
+
+## Slice 3 — G1 apps smoke (`slice3/`)
+
+Staging Fargate service on ALB using ECR `tc-macro/authentication-service:<tag>` (default `smoke` = nginx placeholder until real builds).
+
 ```bash
-cd deploy/aws/slice2
-bun install
+# Needs deploy IAM user env (from SM) — not interactive aws login
+./deploy/aws/scripts/g1-smoke-ecr-push.sh smoke
+cd deploy/aws/slice3 && bun install
 pulumi stack select dev || pulumi stack init dev
-pulumi up
+pulumi preview   # pulumi up only with Stefan deploy ask
 ```
 
-**Live Slice 2 (2026-10-20):** see agent store `macro-aws-slice2-receipt.md`. Monthly budget `tc-macro-staging-monthly` ($200).
+Prep notes: agent store `macro-aws-g1-prep.md`.
 
 ### Still blocked for full G1
 
-- **Image builds** (nix) + push into ECR (repos ready)
-- FusionAuth + SMTP from AKV
+- **Deploy key on Phase 1 VM** (Grok has session; bridge SM → Bitwarden, not chat)
+- **Image builds** (nix missing on Phase 1 VM) + real push into ECR (repos ready; smoke script OK)
+- FusionAuth + SMTP from AKV (Grok Azure)
 - MSK + OpenSearch (**Stefan paid GO**)
 - Real AKV → SM sync for app secrets
 - ACM + custom domain for HTTPS
-- CF `wrangler deploy --env tc` (needs AKV account-id)
+- CF Account ID (Grok) + `wrangler deploy --env tc`
 
 ## Out of scope here
 
