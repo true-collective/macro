@@ -1,0 +1,4 @@
+config:
+  aws:region: us-east-1
+  tc-macro-foundation:environment: dev
+  tc-macro-foundation:vpcCidr: 10.80.0.0/16
