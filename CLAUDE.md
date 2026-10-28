@@ -147,3 +147,8 @@ How:
   obvious. ID-bearing rules take the next free number.
 - Keep this file short: rules and links, no journals, command lists, or runbooks.
 - Tell the user which doc you changed and how, in one line.
+
+<!-- entire-agent:begin -->
+Read .entire/agent-guide.md for this repository's workflow, source inspection, and verification guidance.
+@.entire/agent-guide.md
+<!-- entire-agent:end -->
