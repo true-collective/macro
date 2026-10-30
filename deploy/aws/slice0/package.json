@@ -1,0 +1,14 @@
+{
+  "name": "@true-collective/tc-macro-foundation",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "@pulumi/aws": "^6.83.0",
+    "@pulumi/pulumi": "^3.170.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}

@@ -1,0 +1,4 @@
+config:
+  aws:region: us-east-1
+  tc-macro-platform:environment: dev
+encryptionsalt: v1:G0XJdIOkP0A=:v1:RNy4htLVfAtHKDS6:Xi/GqSMCf/ye8EF5fLltpcSnH7JlFQ==
